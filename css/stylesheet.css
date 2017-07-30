@@ -1,0 +1,43 @@
+body {
+  background-image: url("../img/wine-table-background.png");
+  background-color: black;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+
+#loginPanel {
+  background-color: rgba(0, 0, 0, .8);
+  width: 30vw;
+  height: 32vh;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -18vh 0 0 -15vw;
+}
+
+.loginInput, .loginButton {
+  width: 28vw;
+  height: 8vh;
+  padding: 0 1vw;
+  font-size: 3vh;
+  margin: 2vh 1vw 0vh 1vw;
+  color: white;
+}
+
+.loginInput {
+  border: 2px solid white;
+  background-color: rgba(0, 0, 0, .8);
+}
+
+.loginButton {
+  border: 2px solid white;
+  background-color: rgba(70, 70, 70, .8);
+}
+
+.loginButton:hover {
+  border: 2px solid white;
+  background-color: rgba(200, 200, 200, .8);
+  color: black;
+}
