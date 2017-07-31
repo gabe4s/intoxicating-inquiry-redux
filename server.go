@@ -7,10 +7,15 @@ import (
   "time"
   "crypto/sha256"
   "encoding/hex"
+  "os"
 )
 
 func main() {
   port := "8080";
+
+  if len(os.Args) > 1 {
+    port = os.Args[1]
+  }
 
   http.HandleFunc("/img/", serveResource)
   http.HandleFunc("/css/", serveResource)
@@ -40,5 +45,6 @@ func loginService(w http.ResponseWriter, r *http.Request) {
   hasher := sha256.New()
   hasher.Write([]byte(password))
   hashedPassword := hex.EncodeToString(hasher.Sum(nil))
+  fmt.Println(username + " " + password + " " + hashedPassword)
   http.Redirect(w, r, "/home", http.StatusFound)
 }
