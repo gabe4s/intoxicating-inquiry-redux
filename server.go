@@ -23,7 +23,7 @@ func main() {
   http.HandleFunc("/", serveHtml)
   http.HandleFunc("/webservice/login", loginService)
 
-  fmt.Println("Server listening on port " + port);
+  fmt.Println("Intoxicating Inquiry server listening on port " + port)
   log.Fatal(http.ListenAndServe(":" + port, nil))
 }
 
@@ -37,14 +37,28 @@ func serveResource(w http.ResponseWriter, r *http.Request) {
 }
 
 func loginService(w http.ResponseWriter, r *http.Request) {
-  cookie := http.Cookie{Name: "intoxicating_inquiry_session_cookie", Value: "23fwfffw5tye", Expires: time.Now().Add(1 * 24 * time.Hour), Path: "/"}
-  http.SetCookie(w, &cookie)
   r.ParseForm()
   username := r.Form.Get("username")
   password := r.Form.Get("password")
   hasher := sha256.New()
   hasher.Write([]byte(password))
   hashedPassword := hex.EncodeToString(hasher.Sum(nil))
-  fmt.Println(username + " " + password + " " + hashedPassword)
-  http.Redirect(w, r, "/home", http.StatusFound)
+
+  t := time.Now()
+
+  sessionIdString := username + ":" + hashedPassword + ":" + t.String()
+  fmt.Println("SessIDString: " + sessionIdString)
+
+  hasher = sha256.New()
+  hasher.Write([]byte(sessionIdString))
+  sessionIdHash := hex.EncodeToString(hasher.Sum(nil))
+  fmt.Println("SessIdHash: " + sessionIdHash)
+
+  if(true) {
+    cookie := http.Cookie{Name: "intoxicating_inquiry_session_cookie", Value: sessionIdHash, Expires: time.Now().Add(1 * 24 * time.Hour), Path: "/"}
+    http.SetCookie(w, &cookie)
+    http.Redirect(w, r, "/home", http.StatusFound)
+  } else {
+
+  }
 }
