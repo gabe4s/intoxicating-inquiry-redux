@@ -14,12 +14,13 @@ body {
 
 #loginPanel {
   background-color: rgba(0, 0, 0, .8);
-  width: 30vw;
-  height: 32vh;
+  width: 32vw;
+  height: 36vh;
   position: absolute;
   top: 50%;
   left: 50%;
-  margin: -18vh 0 0 -15vw;
+  margin: -18vh 0 0 -16vw;
+  padding: 3vh 2vw;
 }
 
 .loginInput, .loginButton {
@@ -27,7 +28,7 @@ body {
   height: 8vh;
   padding: 0 1vw;
   font-size: 3vh;
-  margin: 2vh 1vw 0vh 1vw;
+  margin: 1vh 0vh;
   color: white;
 }
 
@@ -45,4 +46,9 @@ body {
   border: 2px solid white;
   background-color: rgba(200, 200, 200, .8);
   color: black;
+}
+
+#loginNotification {
+  color: #cf0000;
+  font-weight: bold;
 }

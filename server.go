@@ -148,6 +148,8 @@ func loginService(w http.ResponseWriter, r *http.Request) {
   sessionIdHash := hex.EncodeToString(hasher.Sum(nil))
   fmt.Println("SessIdHash: " + sessionIdHash)
 
+  responseCode := http.StatusUnauthorized
+
   userId := getUserIdFromDb(username, passwordHash)
   if(userId != -1) {
     stmt, err := db.Prepare("INSERT INTO session (`session_id`, `user_id`) VALUES (?, ?)")
@@ -163,12 +165,12 @@ func loginService(w http.ResponseWriter, r *http.Request) {
         cookie := http.Cookie{Name: "intoxicating_inquiry_session_cookie", Value: sessionIdHash, Expires: time.Now().Add(1 * 24 * time.Hour), Path: "/"}
         http.SetCookie(w, &cookie)
         fmt.Println("Sending redirect")
-        http.Redirect(w, r, "/home", http.StatusFound)
+        responseCode = http.StatusOK
       }
     }
-  } else {
-    // handle invalid login
   }
+
+  w.WriteHeader(responseCode)
 
 }
 
