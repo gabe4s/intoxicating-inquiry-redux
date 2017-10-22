@@ -5,11 +5,14 @@ body {
   -moz-background-size: cover;
   -o-background-size: cover;
   background-size: cover;
+  height: 100vh;
+  width: 100vw;
+  padding: 20px;
 }
 
 #gwd-corner-logo {
 	height: 20vh;
-	width: 20vh;
+  width: 20vh;
 }
 
 #loginPanel {
@@ -51,4 +54,38 @@ body {
 #loginNotification {
   color: #cf0000;
   font-weight: bold;
+}
+
+#wrapper {
+  color: white;
+  background-color: rgba(0, 0, 0, .5);
+  height: 100%;
+  width: 100%;
+  padding: 0 15px;
+  box-sizing: border-box;
+}
+
+#navigation-bar {
+  padding: 20px;
+  border-bottom: 1px solid white;
+  overflow: hidden;
+}
+
+.navigation-link, navigation-link:visited {
+  display:table;
+  text-align: center;
+  width: 80%;
+  min-width: 120px;
+  font-size: 24px;
+  margin: auto;
+  border-bottom: 2px solid #cf0000;
+}
+
+.navigation-link {
+  color: white;
+}
+
+.navigation-link:hover {
+  color: #cf0000;
+  text-decoration: none;
 }

@@ -121,7 +121,7 @@ func serveHtml(w http.ResponseWriter, r *http.Request, path string) {
   if(path == "login") {
     http.ServeFile(w, r, "assets/html/login.html")
   } else if (path == "home"){
-    fmt.Fprintf(w, "Welcome to your homepage")
+    http.ServeFile(w, r, "assets/html/template.html")
   }
 }
 
