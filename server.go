@@ -77,10 +77,10 @@ func isValidSession(cookie *http.Cookie) bool {
   returnValue := false
 
   if(cookie != nil) {
-    sessionId := cookie.Value
-    fmt.Println("SessionId: " + sessionId)
+    sessionKey := cookie.Value
+    fmt.Println("SessionKey: " + sessionKey)
     user_id := -1
-    getDatabaseConnection().QueryRow("SELECT user_id FROM session WHERE session_id=? LIMIT 1", sessionId).Scan(&user_id)
+    getDatabaseConnection().QueryRow("SELECT user_id FROM session WHERE session_key=? LIMIT 1", sessionKey).Scan(&user_id)
     fmt.Println("UserId: ", user_id)
     if(user_id != -1) {
       returnValue = true
@@ -140,29 +140,29 @@ func loginService(w http.ResponseWriter, r *http.Request) {
 
   t := time.Now()
 
-  sessionIdString := username + ":" + passwordHash + ":" + t.String()
-  fmt.Println("SessIDString: " + sessionIdString)
+  sessionKeyString := username + ":" + passwordHash + ":" + t.String()
+  fmt.Println("SessIDString: " + sessionKeyString)
 
   hasher = sha256.New()
-  hasher.Write([]byte(sessionIdString))
-  sessionIdHash := hex.EncodeToString(hasher.Sum(nil))
-  fmt.Println("SessIdHash: " + sessionIdHash)
+  hasher.Write([]byte(sessionKeyString))
+  sessionKeyHash := hex.EncodeToString(hasher.Sum(nil))
+  fmt.Println("SessIdHash: " + sessionKeyHash)
 
   responseCode := http.StatusUnauthorized
 
   userId := getUserIdFromDb(username, passwordHash)
   if(userId != -1) {
-    stmt, err := db.Prepare("INSERT INTO session (`session_id`, `user_id`) VALUES (?, ?)")
-    fmt.Println("Inserting SessionId: " + sessionIdHash)
+    stmt, err := db.Prepare("INSERT INTO session (`session_key`, `user_id`) VALUES (?, ?)")
+    fmt.Println("Inserting sessionKey: " + sessionKeyHash)
     if(err != nil) {
       logError(err)
     } else {
-      _, err = stmt.Exec(sessionIdHash, userId)
+      _, err = stmt.Exec(sessionKeyHash, userId)
       if(err != nil) {
         logError(err)
       } else {
         fmt.Println("Logged in user: ", userId)
-        cookie := http.Cookie{Name: "intoxicating_inquiry_session_cookie", Value: sessionIdHash, Expires: time.Now().Add(1 * 24 * time.Hour), Path: "/"}
+        cookie := http.Cookie{Name: "intoxicating_inquiry_session_cookie", Value: sessionKeyHash, Expires: time.Now().Add(1 * 24 * time.Hour), Path: "/"}
         http.SetCookie(w, &cookie)
         fmt.Println("Sending redirect")
         responseCode = http.StatusOK
