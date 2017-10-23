@@ -22,3 +22,9 @@ function login() {
   document.getElementById("loginNotification").innerHTML = loginNotificationText;
 
 }
+
+function handleLoginEnter(e){
+    if(e.keyCode === 13){
+      document.getElementById("loginButton").click();
+    }
+}

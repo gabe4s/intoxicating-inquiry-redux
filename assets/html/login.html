@@ -16,9 +16,9 @@
         <div class="col-sm-4"></div>
         <div class="col-md-4" style="height: 36vh;">
           <div id="loginPanel">
-            <input id="usernameBox" class="loginInput" type="text" placeholder="Username" name="username" required>
-            <input id="passwordBox" class="loginInput" type="password" placeholder="Password" name="password" required>
-            <button class="loginButton" type="button" onclick="login()">Log In</button>
+            <input id="usernameBox" class="loginInput" type="text" placeholder="Username" name="username" onkeypress="handleLoginEnter(event);" required>
+            <input id="passwordBox" class="loginInput" type="password" placeholder="Password" name="password" onkeypress="handleLoginEnter(event);" required>
+            <button id="loginButton" type="button" onclick="login()">Log In</button>
             <div id="loginNotification"/>
           </div>
         </div>
