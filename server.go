@@ -11,8 +11,23 @@ import (
   "database/sql"
   "io/ioutil"
   "encoding/json"
+  "text/template"
   _ "github.com/go-sql-driver/mysql"
 )
+
+type User struct {
+  user_id int
+  first_name string
+  last_name string
+  username string
+  password string
+}
+
+type TemplateVariables struct {
+  Title string
+  Name string
+  Content string
+}
 
 type Config struct {
   Db_Username string  `json:"db_username"`
@@ -66,74 +81,89 @@ func getDatabaseConnection() *sql.DB {
   return db
 }
 
-func getUserIdFromDb(username string, passwordHash string) int {
-  user_id := -1
-  getDatabaseConnection().QueryRow("SELECT user_id FROM user WHERE username=? AND password=? LIMIT 1", username, passwordHash).Scan(&user_id)
+func getUserFromDbByCredentials(username string, passwordHash string) User {
+  var user User
+  err := getDatabaseConnection().QueryRow("SELECT * FROM user WHERE username=? AND password=? LIMIT 1", username, passwordHash).Scan(&user.user_id, &user.first_name, &user.last_name, &user.username, &user.password)
 
-  return user_id
-}
-
-func isValidSession(cookie *http.Cookie) bool {
-  returnValue := false
-
-  if(cookie != nil) {
-    sessionKey := cookie.Value
-    fmt.Println("SessionKey: " + sessionKey)
-    user_id := -1
-    getDatabaseConnection().QueryRow("SELECT user_id FROM session WHERE session_key=? LIMIT 1", sessionKey).Scan(&user_id)
-    fmt.Println("UserId: ", user_id)
-    if(user_id != -1) {
-      returnValue = true
-    }
+  if(err != nil) {
+    fmt.Println(err)
+    return User{}
+  } else {
+    return user
   }
-
-  fmt.Println("ValidSession: ", returnValue)
-
-  return returnValue
 }
 
-func handlePath(w http.ResponseWriter, r *http.Request) {
-  requestedUrlPath := r.URL.Path[1:]
+func getUserFromDbBySessionKey(sessionKey string) User {
+  var user User
+  err := getDatabaseConnection().QueryRow("SELECT u.* FROM user u JOIN session s ON u.user_id=s.user_id WHERE s.session_key=?", sessionKey).Scan(&user.user_id, &user.first_name, &user.last_name, &user.username, &user.password)
+
+  if(err != nil) {
+    fmt.Println(err)
+    return User{}
+  } else {
+    return user
+  }
+}
+
+func handlePath(res http.ResponseWriter, req *http.Request) {
+  requestedUrlPath := req.URL.Path[1:]
   fmt.Println(requestedUrlPath)
 
-  cookie, err := r.Cookie("intoxicating_inquiry_session_cookie")
+  user := User{}
+
+  cookie, err := req.Cookie("intoxicating_inquiry_session_cookie")
   if(err != nil) {
     logError(err)
   }
 
+  if(cookie != nil) {
+    sessionKey := cookie.Value
+    user = getUserFromDbBySessionKey(sessionKey)
+  }
+
+  isValidSession := false
+  if(user != (User{})) {
+    isValidSession = true
+  }
+
   if(requestedUrlPath == "login") {
-    if(isValidSession(cookie)) {
-      http.Redirect(w, r, "/home", http.StatusFound)
+    if(isValidSession) {
+      http.Redirect(res, req, "/home", http.StatusFound)
     } else {
-      serveHtml(w, r, "login")
+      serveHtml(res, req, user, "login")
     }
   } else {
-    if(isValidSession(cookie)) {
-      serveHtml(w, r, requestedUrlPath)
+    if(isValidSession) {
+      serveHtml(res, req, user, requestedUrlPath)
     } else {
-      http.Redirect(w, r, "/login", http.StatusFound)
+      http.Redirect(res, req, "/login", http.StatusFound)
     }
   }
 
 }
 
-func serveHtml(w http.ResponseWriter, r *http.Request, path string) {
+func serveHtml(res http.ResponseWriter, req *http.Request, user User, path string) {
   if(path == "login") {
-    http.ServeFile(w, r, "assets/html/login.html")
-  } else if (path == "home"){
-    http.ServeFile(w, r, "assets/html/template.html")
+    http.ServeFile(res, req, "assets/html/login.html")
+  } else {
+    templateFileName := "assets/html/template.html"
+    template := template.Must(template.ParseFiles(templateFileName))
+    if (path == "home") {
+      templateVariables := TemplateVariables{"Home", user.first_name + " " + user.last_name, ""}
+      template.Execute(res, templateVariables)
+    }
   }
 }
 
-func serveResource(w http.ResponseWriter, r *http.Request) {
-  path := "assets" + r.URL.Path
-  http.ServeFile(w, r, path)
+func serveResource(res http.ResponseWriter, req *http.Request) {
+  path := "assets" + req.URL.Path
+  http.ServeFile(res, req, path)
 }
 
-func loginService(w http.ResponseWriter, r *http.Request) {
-  r.ParseForm()
-  username := r.Form.Get("username")
-  password := r.Form.Get("password")
+func loginService(res http.ResponseWriter, req *http.Request) {
+  req.ParseForm()
+  username := req.Form.Get("username")
+  password := req.Form.Get("password")
   hasher := sha256.New()
   hasher.Write([]byte(password))
   passwordHash := hex.EncodeToString(hasher.Sum(nil))
@@ -150,27 +180,26 @@ func loginService(w http.ResponseWriter, r *http.Request) {
 
   responseCode := http.StatusUnauthorized
 
-  userId := getUserIdFromDb(username, passwordHash)
-  if(userId != -1) {
+  user := getUserFromDbByCredentials(username, passwordHash)
+  if(user != (User{})) {
     stmt, err := db.Prepare("INSERT INTO session (`session_key`, `user_id`) VALUES (?, ?)")
     fmt.Println("Inserting sessionKey: " + sessionKeyHash)
     if(err != nil) {
       logError(err)
     } else {
-      _, err = stmt.Exec(sessionKeyHash, userId)
+      _, err = stmt.Exec(sessionKeyHash, user.user_id)
       if(err != nil) {
         logError(err)
       } else {
-        fmt.Println("Logged in user: ", userId)
+        fmt.Println("User Logged In: ", user.username)
         cookie := http.Cookie{Name: "intoxicating_inquiry_session_cookie", Value: sessionKeyHash, Expires: time.Now().Add(1 * 24 * time.Hour), Path: "/"}
-        http.SetCookie(w, &cookie)
-        fmt.Println("Sending redirect")
+        http.SetCookie(res, &cookie)
         responseCode = http.StatusOK
       }
     }
   }
 
-  w.WriteHeader(responseCode)
+  res.WriteHeader(responseCode)
 
 }
 
