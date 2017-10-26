@@ -148,7 +148,9 @@ func serveHtml(res http.ResponseWriter, req *http.Request, user User, path strin
   } else {
     templateFileName := "assets/html/template.html"
     template := template.Must(template.ParseFiles(templateFileName))
-    if (path == "home") {
+    if (path == "") {
+      http.Redirect(res, req, "/home", http.StatusFound)
+    } else if (path == "home") {
       templateVariables := TemplateVariables{"Home", user.first_name + " " + user.last_name, ""}
       template.Execute(res, templateVariables)
     }
