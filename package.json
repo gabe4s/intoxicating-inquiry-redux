@@ -1,0 +1,23 @@
+{
+  "name": "intoxicating-inquiry",
+  "version": "1.0.0",
+  "description": "Cocktail recipe creator",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.16.2",
+    "nodemon": "^1.13.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gabe4s/intoxicating-inquiry-redux.git"
+  },
+  "author": "Gabe Douda",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gabe4s/intoxicating-inquiry-redux/issues"
+  },
+  "homepage": "https://github.com/gabe4s/intoxicating-inquiry-redux#readme"
+}
