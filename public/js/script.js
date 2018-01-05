@@ -5,8 +5,8 @@ function login() {
 
   var xhttp = new XMLHttpRequest();
   xhttp.open("POST", "/webservice/login", false);
-  xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  xhttp.send("username=" + usernameBox.value + "&password=" + passwordBox.value);
+  xhttp.setRequestHeader("Content-type", "application/json");
+  xhttp.send(JSON.stringify({username: usernameBox.value, password: passwordBox.value}));
   
   var statusCode = xhttp.status;
   var loginNotificationText = "";
